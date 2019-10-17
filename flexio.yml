@@ -1,8 +1,8 @@
 title: Web Integration
 description: Functions for accessing information from web pages
 image:
-  src:
-  alt: Web logo
+  src: https://www.flex.io/assets/logo.png
+  alt: Flexio logo
 functions:
   - path: newspaper.py
 prompts: []
