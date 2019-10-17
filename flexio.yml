@@ -1,0 +1,8 @@
+title: Web Integration
+description: Functions for accessing information from web pages
+image:
+  src:
+  alt: Web logo
+functions:
+  - path: newspaper.py
+prompts: []
