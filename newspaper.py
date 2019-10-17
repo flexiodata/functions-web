@@ -18,7 +18,7 @@
 # - '"https://www.flex.io", "text"'
 # - '"https://www.flex.io", "title, top_image"'
 # - '"https://www.flex.io", A1:A3'
-# notes:
+# notes: |-
 #   The following columns are allowed: title, authors, publish_date, text, top_image, images, movies
 # ---
 
