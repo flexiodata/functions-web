@@ -83,7 +83,7 @@ def flexio_handler(flex):
 
         # limit the results to the requested columns
         columns = [c.lower().strip() for c in input['columns']]
-        result = [info.get(c,'') for c in columns]
+        result = [[info.get(c,'') for c in columns]]
 
         # return the results
         result = json.dumps(result, default=to_string)
