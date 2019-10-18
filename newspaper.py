@@ -24,6 +24,7 @@
 
 import json
 import requests
+import itertools
 from datetime import *
 from decimal import *
 from cerberus import Validator
