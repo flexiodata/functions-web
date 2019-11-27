@@ -5,4 +5,5 @@ image:
   alt: Flexio logo
 functions:
   - path: newspaper.py
+  - path: web-list-sitemap.py
 prompts: []
