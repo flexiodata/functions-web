@@ -1,6 +1,6 @@
 
 # ---
-# name: newspaper
+# name: web-newspaper
 # deployed: true
 # title: Newspaper
 # description: Returns content information from a web page
