@@ -1,13 +1,13 @@
 
 # ---
-# name: web-extract-link-multiple
+# name: web-extract-link
 # deployed: true
 # title: Website Link Extraction
 # description: Returns the domain and/or url for all links on one-or-more webpages matching a search string.
 # params:
 # - name: url
 #   type: array
-#   description: Urls of webpage to search; parameter can be an array or urls or a comma-delimited list of urls
+#   description: Urls of web pages to search; parameter can be an array or urls or a comma-delimited list of urls
 #   required: true
 # - name: search
 #   type: string
