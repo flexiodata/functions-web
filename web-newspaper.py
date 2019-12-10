@@ -9,24 +9,29 @@
 #   type: string
 #   description: Url for which to get the info
 #   required: true
-# - name: columns
+# - name: properties
 #   type: array
-#   description: Information to return; default returns 'title'
+#   description: The properties to return (defaults to all properties). See "Notes" for a listing of the available properties.
 #   required: false
 # examples:
 # - '"https://www.flex.io"'
 # - '"https://www.flex.io", "text"'
 # - '"https://www.flex.io", "title, top_image"'
-# - '"https://www.flex.io", A1:A3'
-# notes: |-
-#   The following columns are allowed: title, authors, publish_date, text, top_image, images, movies
+# notes: |
+#   The following properties are allowed:
+#     * `title`: the main title of the page
+#     * `authors`: the authors of the page
+#     * `publish_date`: the publish date of the page
+#     * `text`:
+#     * `top_image`:
+#     * `images`:
+#     * `movies`:
 # ---
 
 import json
 import requests
 import itertools
 from datetime import *
-from decimal import *
 from cerberus import Validator
 from collections import OrderedDict
 from newspaper import Article
@@ -45,7 +50,7 @@ def flexio_handler(flex):
     # based on the positions of the keys/values
     params = OrderedDict()
     params['url'] = {'required': True, 'type': 'string'}
-    params['columns'] = {'required': False, 'validator': validator_list, 'coerce': to_list, 'default': 'title'}
+    params['properties'] = {'required': False, 'validator': validator_list, 'coerce': to_list, 'default': 'title'}
     input = dict(zip(params.keys(), input))
 
     # validate the mapped input against the validator
@@ -53,6 +58,22 @@ def flexio_handler(flex):
     input = v.validated(input)
     if input is None:
         raise ValueError
+
+    property_map = OrderedDict()
+    property_map['title'] = 'title'
+    property_map['authors'] = 'authors'
+    property_map['publish_date'] = 'publish_date'
+    property_map['text'] = 'text'
+    property_map['top_image'] = 'top_image'
+    property_map['images'] = 'images'
+    property_map['movies'] = 'movies'
+
+    # get the properties to return and the property map
+    properties = [p.lower().strip() for p in input['properties']]
+
+    # if we have a wildcard, get all the properties
+    if len(properties) == 1 and properties[0] == '*':
+        properties = list(property_map.keys())
 
     try:
 
@@ -82,9 +103,8 @@ def flexio_handler(flex):
         #info['summary'] = article.summary
         #info['keywords'] = ';'.joins(article.keywords)
 
-        # limit the results to the requested columns
-        columns = [c.lower().strip() for c in input['columns']]
-        result = [[info.get(c,'') for c in columns]]
+        # limit the results to the requested properties
+        result = [[info.get(property_map.get(p,''),'') or '' for p in properties]]
 
         # return the results
         result = json.dumps(result, default=to_string)
