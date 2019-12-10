@@ -4,5 +4,6 @@ image:
   src: https://www.flex.io/assets/logo.png
   alt: Flexio logo
 functions:
+  - path: web-extract-link.py
   - path: web-newspaper.py
 prompts: []
