@@ -1,13 +1,13 @@
 
 # ---
-# name: web-extract-link
+# name: web-extract-link-multiple
 # deployed: true
 # title: Website Link Extraction
-# description: Returns the url and domain for all links on one-or-more webpages matching a search string.
+# description: Returns the domain and/or url for all links on one-or-more webpages matching a search string.
 # params:
 # - name: url
-#   type: string
-#   description: Url of webpage to search
+#   type: array
+#   description: Urls of webpage to search; parameter can be an array or urls or a comma-delimited list of urls
 #   required: true
 # - name: search
 #   type: string
@@ -19,7 +19,7 @@
 #   required: false
 # examples:
 # - '"https://www.flex.io", "Contact Us"'
-# - '"https://news.ycombinator.com/", "Contact, link"'
+# - '"https://news.ycombinator.com/", "Contact", "link"'
 # notes: |
 #   The following properties are allowed:
 #     * `link`: the link corresponding to the matched item
@@ -27,9 +27,10 @@
 # ---
 
 import json
-import requests
+import aiohttp
+import asyncio
 import urllib
-from datetime import *
+import itertools
 from cerberus import Validator
 from collections import OrderedDict
 from bs4 import BeautifulSoup
@@ -47,7 +48,7 @@ def flexio_handler(flex):
     # define the expected parameters and map the values to the parameter names
     # based on the positions of the keys/values
     params = OrderedDict()
-    params['url'] = {'required': True, 'type': 'string'}
+    params['urls'] = {'required': True, 'validator': validator_list, 'coerce': to_list}
     params['search'] = {'required': True, 'type': 'string'}
     params['properties'] = {'required': False, 'validator': validator_list, 'coerce': to_list, 'default': '*'}
     input = dict(zip(params.keys(), input))
@@ -58,77 +59,67 @@ def flexio_handler(flex):
     if input is None:
         raise ValueError
 
-    property_map = OrderedDict()
-    property_map['link'] = 'link'
-    property_map['domain'] = 'domain'
+    # get the urls to process
+    search_urls = input['urls']
+
+    # get the search term to use to find the corresponding links
+    search_text = input['search']
 
     # get the properties to return and the property map
+    property_map = OrderedDict()
+    property_map['domain'] = 'domain'
+    property_map['link'] = 'link'
     properties = [p.lower().strip() for p in input['properties']]
 
     # if we have a wildcard, get all the properties
     if len(properties) == 1 and properties[0] == '*':
         properties = list(property_map.keys())
 
-    try:
+    loop = asyncio.get_event_loop()
+    result = loop.run_until_complete(fetch_all(search_urls, search_text, properties))
+    flex.output.write(result)
 
-        # search url and text
-        search_url = input['url']
-        search_expression = input['search']
+async def fetch_all(search_urls, search_text, properties):
+    tasks = []
+    async with aiohttp.ClientSession() as session:
+        for search_url in search_urls:
+            tasks.append(fetch(session, search_url, search_text, properties))
+        content = await asyncio.gather(*tasks)
+        return list(itertools.chain.from_iterable(content))
 
-        # build up the result
-        result = []
-        result.append(properties)
+async def fetch(session, search_url, search_text, properties):
+    async with session.get(search_url) as response:
+        content = await response.text()
+        return parseContent(content, search_url, search_text, properties)
 
-        row = getPage(search_url, search_expression, properties)
-        if row is not False:
-            result += row
+def parseContent(content, search_url, search_text, properties):
 
-        # return the result
-        flex.output.content_type = "application/json"
-        flex.output.write(result)
+    # extract the info and build up the result
+    soup = BeautifulSoup(content, "lxml")
 
-    except:
-        flex.output.content_type = 'application/json'
-        flex.output.write([['']])
+    result = []
+    for item in soup.findAll(True, text=search_text):
+        link, domain = '',''
+        if item is not None and item.name == 'a':
+            link = item.get('href','')
+        else:
+            parent = item.find_parent('a')
+            if parent is not None and parent.name == 'a':
+                link = parent.get('href','')
+        if len(link) == 0:
+            continue
 
-def getPage(search_url, search_expression, properties):
+        # if we don't have a complete url, use the search url as the base;
+        # see here for info on urllib.parse: https://docs.python.org/3/library/urllib.parse.html
+        link = urllib.parse.urljoin(search_url, link)
+        domain = urllib.parse.urlparse(link)[1] # second item is the network location part of the url
+        available_properties = {'domain': domain, 'link': link}
 
-    try:
+        # append the row to the result
+        row = [available_properties.get(p,'') for p in properties]
+        result.append(row)
 
-        # get the contents from a URL
-        response = requests.get(search_url)
-        response.raise_for_status()
-        content = response.text
-
-        # extract the info and build up the result
-        soup = BeautifulSoup(content, "lxml")
-
-        result = []
-        for item in soup.findAll(True, text=search_expression):
-            link, domain = '',''
-            if item is not None and item.name == 'a':
-                link = item.get('href','')
-            else:
-                parent = item.find_parent('a')
-                if parent is not None and parent.name == 'a':
-                    link = parent.get('href','')
-            if len(link) == 0:
-                continue
-
-            # if we don't have a complete url, use the search url as the base;
-            # see here for info on urllib.parse: https://docs.python.org/3/library/urllib.parse.html
-            link = urllib.parse.urljoin(search_url, link)
-            domain = urllib.parse.urlparse(link)[1] # second item is the network location part of the url
-            available_properties = {'link': link, 'domain': domain}
-
-            # append the row to the result
-            row = [available_properties.get(p,'') for p in properties]
-            result.append(row)
-
-        return result
-
-    except:
-        return False
+    return result
 
 def validator_list(field, value, error):
     if isinstance(value, str):
@@ -139,13 +130,6 @@ def validator_list(field, value, error):
                 error(field, 'Must be a list with only string values')
         return
     error(field, 'Must be a string or a list of strings')
-
-def to_string(value):
-    if isinstance(value, (date, datetime)):
-        return value.isoformat()
-    if isinstance(value, (Decimal)):
-        return str(value)
-    return value
 
 def to_list(value):
     # if we have a list of strings, create a list from them; if we have
