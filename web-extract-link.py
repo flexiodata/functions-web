@@ -85,7 +85,7 @@ def flexio_handler(flex):
 
         row = getPage(search_url, search_expression, properties)
         if row is not False:
-            result.append(row)
+            result += row
 
         # return the result
         flex.output.content_type = "application/json"
@@ -107,6 +107,7 @@ def getPage(search_url, search_expression, properties):
         # extract the info and build up the result
         soup = BeautifulSoup(content, "lxml")
 
+        result = []
         for item in soup.findAll(True, text=search_expression):
             link, domain = '',''
             if item is not None and item.name == 'a':
@@ -118,13 +119,17 @@ def getPage(search_url, search_expression, properties):
             if len(link) == 0:
                 continue
 
-            # get a complete url; see here for info on urllib.parse: https://docs.python.org/3/library/urllib.parse.html
+            # if we don't have a complete url, use the search url as the base;
+            # see here for info on urllib.parse: https://docs.python.org/3/library/urllib.parse.html
             link = urllib.parse.urljoin(search_url, link)
-            domain = urllib.parse.urlparse(search_url)[1] # second item is the network location part of the url
+            domain = urllib.parse.urlparse(link)[1] # second item is the network location part of the url
             available_properties = {'link': link, 'domain': domain}
 
-        row = [available_properties.get(p,'') for p in properties]
-        return row
+            # append the row to the result
+            row = [available_properties.get(p,'') for p in properties]
+            result.append(row)
+
+        return result
 
     except:
         return False
