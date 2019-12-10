@@ -3,11 +3,11 @@
 # name: web-newspaper
 # deployed: true
 # title: Newspaper
-# description: Returns content information from a web page
+# description: Returns content information from a web page article
 # params:
 # - name: url
 #   type: string
-#   description: Url for which to get the info
+#   description: Url for the article for which to get the info
 #   required: true
 # - name: properties
 #   type: array
@@ -19,13 +19,13 @@
 # - '"https://www.flex.io", "title, top_image"'
 # notes: |
 #   The following properties are allowed:
-#     * `title`: the main title of the page
-#     * `authors`: the authors of the page
-#     * `publish_date`: the publish date of the page
-#     * `text`:
-#     * `top_image`:
-#     * `images`:
-#     * `movies`:
+#     * `title`: the main title of the page article
+#     * `authors`: the authors of the page article
+#     * `publish_date`: the publish date of the page article
+#     * `text`: the text of the page article
+#     * `top_image`: the top image url for the page article
+#     * `images`: a comma-delimited list of image urls for the page article
+#     * `movies`: a comma-delimited list of movie urls for the page article
 # ---
 
 import json
