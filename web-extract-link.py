@@ -17,10 +17,6 @@
 #   type: array
 #   description: The properties to return (defaults to all properties). See "Notes" for a listing of the available properties.
 #   required: false
-# - name: paginator
-#   type: string
-#   description: Optional paginator pattern string for extracting links on pages with similar web pages.
-#   required: true
 # examples:
 # - '"https://www.flex.io", "Contact Us"'
 # - '"https://news.ycombinator.com/", "Contact, link"'
