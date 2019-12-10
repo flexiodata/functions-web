@@ -3,15 +3,15 @@
 # name: web-extract-link
 # deployed: true
 # title: Website Link Extraction
-# description: Returns the domain and/or url for all links on one-or-more webpages matching a search string.
+# description: Returns the domain and/or link for all hyperlinks on one-or-more webpages matching a search string.
 # params:
 # - name: url
 #   type: array
-#   description: Urls of web pages to search; parameter can be an array or urls or a comma-delimited list of urls
+#   description: Urls of web pages to search; parameter can be an array of urls or a comma-delimited list of urls.
 #   required: true
 # - name: search
 #   type: string
-#   description: String
+#   description: The search string to use to find the corresponding link (exact match and case-sensitive).
 #   required: true
 # - name: properties
 #   type: array
@@ -19,11 +19,12 @@
 #   required: false
 # examples:
 # - '"https://www.flex.io", "Contact Us"'
+# - '"https://www.flex.io,https://www.flex.io/integrations", "Contact Us"'
 # - '"https://news.ycombinator.com/", "Contact", "link"'
 # notes: |
 #   The following properties are allowed:
-#     * `link`: the link corresponding to the matched item
 #     * `domain`: the domain corresponding to the matched item
+#     * `link`: the link corresponding to the matched item
 # ---
 
 import json
@@ -61,6 +62,7 @@ def flexio_handler(flex):
 
     # get the urls to process
     search_urls = input['urls']
+    search_urls = [s.strip() for s in search_urls]
 
     # get the search term to use to find the corresponding links
     search_text = input['search']
