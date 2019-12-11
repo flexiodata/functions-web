@@ -81,6 +81,10 @@ def flexio_handler(flex):
 
     loop = asyncio.get_event_loop()
     result = loop.run_until_complete(fetch_all(search_urls, search_text, properties))
+
+    # return the results
+    result = json.dumps(result, default=to_string)
+    flex.output.content_type = "application/json"
     flex.output.write(result)
 
 async def fetch_all(search_urls, search_text, properties):
@@ -135,6 +139,13 @@ def validator_list(field, value, error):
                 error(field, 'Must be a list with only string values')
         return
     error(field, 'Must be a string or a list of strings')
+
+def to_string(value):
+    if isinstance(value, (date, datetime)):
+        return value.isoformat()
+    if isinstance(value, (Decimal)):
+        return str(value)
+    return value
 
 def to_list(value):
     # if we have a list of strings, create a list from them; if we have
