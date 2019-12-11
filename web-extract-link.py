@@ -82,6 +82,10 @@ def flexio_handler(flex):
     loop = asyncio.get_event_loop()
     result = loop.run_until_complete(fetch_all(search_urls, search_text, properties))
 
+    # if we don't have any results, return an empty result
+    if len(result) == 0:
+        result = [['']]
+
     # return the results
     result = json.dumps(result, default=to_string)
     flex.output.content_type = "application/json"
