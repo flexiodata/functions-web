@@ -3,15 +3,15 @@
 # name: web-extract-link
 # deployed: true
 # title: Website Link Extraction
-# description: Returns the domain and/or link for all hyperlinks on one-or-more webpages matching a search string.
+# description: Returns information for all hyperlinks on one-or-more web pages matching a search string; information includes domain, link, and matching text.
 # params:
 # - name: url
 #   type: array
-#   description: Urls of web pages to search; parameter can be an array of urls or a comma-delimited list of urls.
+#   description: Urls of web pages to search; parameter can be a single url or a comma-delimited list of urls.
 #   required: true
 # - name: search
 #   type: string
-#   description: The search string to use to find the corresponding link (exact match and case-sensitive).
+#   description: The search string to use to find the corresponding links.
 #   required: true
 # - name: properties
 #   type: array
@@ -19,12 +19,12 @@
 #   required: false
 # examples:
 # - '"https://www.flex.io", "Contact Us"'
-# - '"https://www.flex.io,https://www.flex.io/integrations", "Contact Us"'
-# - '"https://news.ycombinator.com/", "Contact", "link"'
+# - '"https://news.ycombinator.com/news?p=1,https://news.ycombinator.com/news?p=2,https://news.ycombinator.com/news?p=3","Show HN"'
 # notes: |
 #   The following properties are allowed:
-#     * `domain`: the domain corresponding to the matched item
-#     * `link`: the link corresponding to the matched item
+#     * `domain`: the domain of the link for the matched item
+#     * `link`: the link of the matched item
+#     * `text`: the text of the matched item
 # ---
 
 import json
@@ -66,11 +66,13 @@ def flexio_handler(flex):
 
     # get the search term to use to find the corresponding links
     search_text = input['search']
+    search_text = " ".join(search_text.split()).lower().strip() # remove leading/trailing/duplicate spaces and convert to lowercase
 
     # get the properties to return and the property map
     property_map = OrderedDict()
     property_map['domain'] = 'domain'
     property_map['link'] = 'link'
+    property_map['text'] = 'text'
     properties = [p.lower().strip() for p in input['properties']]
 
     # if we have a wildcard, get all the properties
@@ -100,29 +102,27 @@ async def fetch(session, search_url, search_text, properties):
 def parseContent(content, search_url, search_text, properties):
 
     # extract the info and build up the result
-    soup = BeautifulSoup(content, "lxml")
-
     result = []
-    for item in soup.findAll(True, text=search_text):
-        link, domain = '',''
-        if item is not None and item.name == 'a':
-            link = item.get('href','')
-        else:
-            parent = item.find_parent('a')
-            if parent is not None and parent.name == 'a':
-                link = parent.get('href','')
-        if len(link) == 0:
-            continue
 
-        # if we don't have a complete url, use the search url as the base;
-        # see here for info on urllib.parse: https://docs.python.org/3/library/urllib.parse.html
-        link = urllib.parse.urljoin(search_url, link)
-        domain = urllib.parse.urlparse(link)[1] # second item is the network location part of the url
-        available_properties = {'domain': domain, 'link': link}
+    # remove leading/trailing/duplicate spaces and convert to lowercase
+    cleaned_search_text = " ".join(search_text.split()).lower().strip()
 
-        # append the row to the result
-        row = [available_properties.get(p,'') for p in properties]
-        result.append(row)
+    # parse the content and look for anchors
+    soup = BeautifulSoup(content, "lxml")
+    for item in soup.findAll('a'):
+
+        # get the anchor and item text
+        anchor_href = item.get('href')
+        anchor_text = item.text
+
+        # remove leading/trailing/duplicate spaces and convert to lowercase
+        # if the cleaned search text is in the cleaned anchor text, add the item to the result
+        cleaned_anchor_text = " ".join(anchor_text.split()).lower().strip()
+        if cleaned_search_text in cleaned_anchor_text:
+            link = urllib.parse.urljoin(search_url, anchor_href)
+            domain = urllib.parse.urlparse(link)[1] # second item is the network location part of the url
+            row = [{'domain': domain, 'link': link, 'text': anchor_text}.get(p,'') for p in properties]
+            result.append(row)
 
     return result
 
