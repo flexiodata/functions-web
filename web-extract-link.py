@@ -90,9 +90,12 @@ async def fetch_all(search_urls, search_text, properties):
         return list(itertools.chain.from_iterable(content))
 
 async def fetch(session, search_url, search_text, properties):
-    async with session.get(search_url) as response:
-        content = await response.text()
-        return parseContent(content, search_url, search_text, properties)
+    try:
+        async with session.get(search_url) as response:
+            content = await response.text()
+            return parseContent(content, search_url, search_text, properties)
+    except Exception:
+        return []
 
 def parseContent(content, search_url, search_text, properties):
 
