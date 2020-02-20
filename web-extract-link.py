@@ -5,26 +5,31 @@
 # title: Website Link Extraction
 # description: Returns information for all hyperlinks on one-or-more web pages matching a search string; information includes domain, link, and matching text.
 # params:
-# - name: url
-#   type: array
-#   description: Urls of web pages to search; parameter can be a single url or a comma-delimited list of urls.
-#   required: true
-# - name: search
-#   type: string
-#   description: The search string to use to find the corresponding links.
-#   required: true
-# - name: properties
-#   type: array
-#   description: The properties to return (defaults to all properties). See "Notes" for a listing of the available properties.
-#   required: false
+#   - name: url
+#     type: array
+#     description: Urls of web pages to search; parameter can be a single url or a comma-delimited list of urls.
+#     required: true
+#   - name: search
+#     type: string
+#     description: The search string to use to find the corresponding links.
+#     required: true
+#   - name: properties
+#     type: array
+#     description: The properties to return (defaults to all properties). See "Returns" for a listing of the available properties.
+#     required: false
+# returns:
+#   - name: domain
+#     type: string
+#     description: The domain of the link for the matched item
+#   - name: link
+#     type: string
+#     description: The link of the matched item
+#   - name: text
+#     type: string
+#     description: The text of the matched item
 # examples:
-# - '"https://www.flex.io", "Contact Us"'
-# - '"https://news.ycombinator.com/news?p=1,https://news.ycombinator.com/news?p=2,https://news.ycombinator.com/news?p=3","Show HN"'
-# notes: |
-#   The following properties are allowed:
-#     * `domain`: the domain of the link for the matched item
-#     * `link`: the link of the matched item
-#     * `text`: the text of the matched item
+#   - '"https://www.flex.io", "Contact Us"'
+#   - '"https://news.ycombinator.com/news?p=1,https://news.ycombinator.com/news?p=2,https://news.ycombinator.com/news?p=3","Show HN"'
 # ---
 
 import json
