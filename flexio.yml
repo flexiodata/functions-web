@@ -1,8 +1,8 @@
-title: Web Integration
+title: Web Data
 description: Functions for accessing information from web pages
 image:
   src: https://static.flex.io/assets/logos2/web.png
-  alt: Web logo
+  alt: Web data logo
 functions:
   - path: web-extract-link.py
   - path: web-newspaper.py
