@@ -88,44 +88,39 @@ def flexio_handler(flex):
     if len(properties) == 1 and properties[0] == '*':
         properties = list(property_map.keys())
 
-    try:
+    # get the article
+    url = input['url']
+    headers = {
+        'User-Agent': 'Flex.io'
+    }
+    response = requests.get(url, headers=headers)  # fetch the content manually; this will let us easily extend the example to make multiple async requests
+    response.encoding = response.apparent_encoding # use the apparent encoding when accessing response text
 
-        # get the article
-        url = input['url']
-        headers = {
-            'User-Agent': 'Flex.io'
-        }
-        response = requests.get(url, headers=headers)  # fetch the content manually; this will let us easily extend the example to make multiple async requests
-        response.encoding = response.apparent_encoding # use the apparent encoding when accessing response text
+    article = Article(response.url, language='en')
+    article.download(input_html=response.text)
+    article.parse()
 
-        article = Article(response.url, language='en')
-        article.download(input_html=response.text)
-        article.parse()
+    # return the result
+    info = {}
+    info['title'] = article.title
+    info['authors'] = ','.join(article.authors)
+    info['publish_date'] = article.publish_date
+    info['text'] = article.text
+    info['top_image'] = article.top_image
+    info['images'] = ','.join(article.images)
+    info['movies'] = ','.join(article.movies)
 
-        # return the result
-        info = {}
-        info['title'] = article.title
-        info['authors'] = ','.join(article.authors)
-        info['publish_date'] = article.publish_date
-        info['text'] = article.text
-        info['top_image'] = article.top_image
-        info['images'] = ','.join(article.images)
-        info['movies'] = ','.join(article.movies)
+    #article.nlp()
+    #info['summary'] = article.summary
+    #info['keywords'] = ';'.joins(article.keywords)
 
-        #article.nlp()
-        #info['summary'] = article.summary
-        #info['keywords'] = ';'.joins(article.keywords)
+    # limit the results to the requested properties
+    result = [[info.get(property_map.get(p,''),'') or '' for p in properties]]
 
-        # limit the results to the requested properties
-        result = [[info.get(property_map.get(p,''),'') or '' for p in properties]]
-
-        # return the results
-        result = json.dumps(result, default=to_string)
-        flex.output.content_type = "application/json"
-        flex.output.write(result)
-
-    except:
-        raise RuntimeError
+    # return the results
+    result = json.dumps(result, default=to_string)
+    flex.output.content_type = "application/json"
+    flex.output.write(result)
 
 def validator_list(field, value, error):
     if isinstance(value, str):
