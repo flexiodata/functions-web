@@ -6,4 +6,5 @@ image:
 functions:
   - path: web-extract-link.py
   - path: web-newspaper.py
+  - path: web-rss.py
 prompts: []
