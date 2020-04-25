@@ -1,6 +1,6 @@
 
 # ---
-# name: rss-reader-multiple
+# name: web-rss
 # deployed: true
 # title: RSS Reader
 # description: Returns the articles from the RSS feed given by the URLs

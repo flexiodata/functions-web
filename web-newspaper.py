@@ -2,7 +2,7 @@
 # ---
 # name: web-newspaper
 # deployed: true
-# title: Newspaper
+# title: Website Summary
 # description: Returns content information from a web page article
 # params:
 #   - name: url
