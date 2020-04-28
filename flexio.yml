@@ -36,6 +36,7 @@ templates:
     in_staging: false
 
 functions:
+  - path: web-csv.py
   - path: web-extract-link.py
   - path: web-newspaper.py
   - path: web-rss.py
