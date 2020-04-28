@@ -43,6 +43,8 @@
 
 import json
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 import itertools
 from datetime import *
 from cerberus import Validator
@@ -93,7 +95,7 @@ def flexio_handler(flex):
     headers = {
         'User-Agent': 'Flex.io'
     }
-    response = requests.get(url, headers=headers)  # fetch the content manually; this will let us easily extend the example to make multiple async requests
+    response = requests_retry_session().get(url, headers=headers)  # fetch the content manually; this will let us easily extend the example to make multiple async requests
     response.encoding = response.apparent_encoding # use the apparent encoding when accessing response text
 
     article = Article(response.url, language='en')
@@ -121,6 +123,25 @@ def flexio_handler(flex):
     result = json.dumps(result, default=to_string)
     flex.output.content_type = "application/json"
     flex.output.write(result)
+
+def requests_retry_session(
+    retries=3,
+    backoff_factor=0.3,
+    status_forcelist=(500, 502, 504),
+    session=None,
+):
+    session = session or requests.Session()
+    retry = Retry(
+        total=retries,
+        read=retries,
+        connect=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=status_forcelist,
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    return session
 
 def validator_list(field, value, error):
     if isinstance(value, str):
