@@ -1,10 +1,43 @@
 title: Web Data
 description: Functions for accessing information from web pages
+
 image:
   src: https://static.flex.io/assets/logos2/web.png
   alt: Web data logo
+
+templates:
+  - name: lookup-web-page-links
+    title: 'Lookup links in a web page'
+    description: 'Get a list of web links in a web page'
+    gsheets_spreadsheet_id: ''
+    excel_spreadsheet_path: ''
+    in_production: false
+    in_staging: false
+  - name: lookup-web-page-embedded-tweets
+    title: 'Lookup embedded tweets in a web page'
+    description: 'Get a list of embedded tweets in a web page'
+    gsheets_spreadsheet_id: ''
+    excel_spreadsheet_path: ''
+    in_production: false
+    in_staging: false
+  - name: lookup-web-page-metadata
+    title: 'Lookup metadata for a set of web pages'
+    description: 'Import metadata for a set of web pages, including title, description, and keywords'
+    gsheets_spreadsheet_id: ''
+    excel_spreadsheet_path: ''
+    in_production: false
+    in_staging: false
+  - name: lookup-web-news-metadata
+    title: 'Lookup metadata for news and blog posts'
+    description: 'Import metadata for a set of news and blog posts, including title, author, and publish date'
+    gsheets_spreadsheet_id: ''
+    excel_spreadsheet_path: ''
+    in_production: false
+    in_staging: false
+
 functions:
   - path: web-extract-link.py
   - path: web-newspaper.py
   - path: web-rss.py
+
 prompts: []
