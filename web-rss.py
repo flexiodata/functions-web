@@ -188,6 +188,6 @@ def to_list(value):
 
 def string_from_time(value):
     try:
-        return time.strftime('%Y-%m-%d %H:%M:%S', value)
+        return time.strftime('%Y-%m-%dT%H:%M:%S', value)
     except:
         return ''
